@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { COLORS } from '../utils/colors';
 import {fetchStoreByUserName, verifyPassword} from '../data/api';
@@ -24,6 +25,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('username'); // 'username' or 'password'
   const { login, userCheck } = useAuth();
+  const navigation = useNavigation();
 
 
   const handleContinue = async () => {
@@ -68,6 +70,10 @@ export default function LoginScreen() {
     }
   };
 
+  const handleAddStore = () => {
+    navigation.navigate('StoreRegistration');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -108,6 +114,13 @@ export default function LoginScreen() {
                     onPress={handleContinue}
                   >
                     <Text style={styles.loginButtonText}>Continue</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.addStoreButton}
+                    onPress={handleAddStore}
+                  >
+                    <Text style={styles.addStoreButtonText}>Add your store</Text>
                   </TouchableOpacity>
                 </>
               ) : (
@@ -292,5 +305,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     marginBottom: 4,
+  },
+  addStoreButton: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 16,
+    backgroundColor: COLORS.transparent,
+  },
+  addStoreButtonText: {
+    color: COLORS.primary,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

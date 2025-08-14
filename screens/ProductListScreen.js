@@ -42,8 +42,8 @@ export default function ProductListScreen({ navigation }) {
 
   const loadProducts = async () => {
     try {
-      if (user?.storeId) {
-        const data = await fetchProductsByStoreId(user.storeId);
+      if (user?.id) {
+        const data = await fetchProductsByStoreId(user.id);
         setProducts(data);
         setFilteredProducts(data);
       }

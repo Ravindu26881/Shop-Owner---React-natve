@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginScreen from './screens/LoginScreen';
+import StoreRegistrationScreen from './screens/StoreRegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import ProductListScreen from './screens/ProductListScreen';
 import AddEditProductScreen from './screens/AddEditProductScreen';
@@ -21,6 +22,7 @@ function AuthStack() {
       }}
     >
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="StoreRegistration" component={StoreRegistrationScreen} />
     </Stack.Navigator>
   );
 }

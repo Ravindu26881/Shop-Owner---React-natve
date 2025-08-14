@@ -15,6 +15,27 @@ export const fetchStores = async () => {
   }
 };
 
+export const saveStore = async (storeData) => {
+  try {
+    const response = await fetch(`${API_URL}/stores`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(storeData),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch stores');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching stores:', error);
+    throw error;
+  }
+};
+
+
+
 export const fetchStoreById = async (storeId) => {
   try {
     const response = await fetch(`${API_URL}/stores/${storeId}`);

@@ -22,7 +22,6 @@ export default function DashboardScreen({ navigation }) {
   }, []);
 
   const loadDashboardData = async () => {
-    console.log(3333, user)
     try {
       if (user?.id) {
         const products = await fetchProductsByStoreId(user.id);
