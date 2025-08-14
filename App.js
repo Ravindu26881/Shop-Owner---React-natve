@@ -1,0 +1,89 @@
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LoginScreen from './screens/LoginScreen';
+import DashboardScreen from './screens/DashboardScreen';
+import ProductListScreen from './screens/ProductListScreen';
+import AddEditProductScreen from './screens/AddEditProductScreen';
+import { COLORS } from './utils/colors';
+
+const Stack = createNativeStackNavigator();
+
+function AuthStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="Login" component={LoginScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function AppStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: COLORS.appBackground,
+        },
+        headerTintColor: COLORS.textPrimary,
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
+        headerShadowVisible: false,
+      }}
+    >
+      <Stack.Screen 
+        name="Dashboard" 
+        component={DashboardScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ProductList" 
+        component={ProductListScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="AddProduct" 
+        component={AddEditProductScreen}
+        options={{ title: 'Add Product' }}
+      />
+      <Stack.Screen 
+        name="EditProduct" 
+        component={AddEditProductScreen}
+        options={{ title: 'Edit Product' }}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function AppNavigator() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return null; // You can add a loading screen here
+  }
+
+  return (
+    <NavigationContainer>
+      {isAuthenticated ? <AppStack /> : <AuthStack />}
+    </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="dark" backgroundColor={COLORS.appBackground} />
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
+}
