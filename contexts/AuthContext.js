@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
         setUser(response.store);
         setIsAuthenticated(true);
         // Store user data for persistence
-        await AsyncStorage.setItem('storeOwnerData', JSON.stringify(response));
+        await AsyncStorage.setItem('storeOwnerData', JSON.stringify(response.store));
         return response;
       } else {
         throw new Error(response.error || 'User not found');

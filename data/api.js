@@ -86,9 +86,9 @@ export const fetchProductsByStoreId = async (storeId) => {
   }
 };
 
-export const addProduct = async (storeId, productData) => {
+export const addProduct = async (productData) => {
   try {
-    const response = await fetch(`${API_URL}/stores/${storeId}/products`, {
+    const response = await fetch(`${API_URL}/stores/${productData.store}/products`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

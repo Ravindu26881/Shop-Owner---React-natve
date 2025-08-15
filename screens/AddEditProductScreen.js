@@ -13,9 +13,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { useAuth } from '../contexts/AuthContext';
 import { addProduct, updateProduct } from '../data/api';
 import { COLORS } from '../utils/colors';
+import { IMGBB_API_KEY } from '../config/imageHosting';
 
 export default function AddEditProductScreen({ navigation, route }) {
   const { user } = useAuth();
@@ -27,17 +30,21 @@ export default function AddEditProductScreen({ navigation, route }) {
     price: '',
     image: '',
     description: '',
+    store: user.id,
   });
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (isEditing && product) {
       setFormData({
         name: product.name || '',
+        category: product.category || '',
         price: product.price?.toString() || '',
         image: product.image || '',
         description: product.description || '',
+        store: user.id,
       });
     }
   }, [isEditing, product]);
@@ -55,21 +62,17 @@ export default function AddEditProductScreen({ navigation, route }) {
       newErrors.name = 'Product name is required';
     }
 
+    if (!formData.category.trim()) {
+      newErrors.category = 'Category is required';
+    }
+
     if (!formData.price.trim()) {
       newErrors.price = 'Price is required';
     } else if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
       newErrors.price = 'Please enter a valid price';
     }
 
-    if (!formData.image.trim()) {
-      newErrors.image = 'Image URL is required';
-    } else {
-      // Basic URL validation
-      const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i;
-      if (!urlPattern.test(formData.image)) {
-        newErrors.image = 'Please enter a valid image URL';
-      }
-    }
+
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -84,9 +87,11 @@ export default function AddEditProductScreen({ navigation, route }) {
     try {
       const productData = {
         name: formData.name.trim(),
-        price: parseFloat(formData.price),
+        category: formData.category.trim(),
+        price: formData.price.toString(),
         image: formData.image.trim(),
         description: formData.description.trim(),
+        store: formData.store,
       };
 
       if (isEditing) {
@@ -95,7 +100,7 @@ export default function AddEditProductScreen({ navigation, route }) {
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
       } else {
-        await addProduct(user.storeId, productData);
+        await addProduct(productData);
         Alert.alert('Success', 'Product added successfully', [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
@@ -114,6 +119,164 @@ export default function AddEditProductScreen({ navigation, route }) {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
+  };
+
+  const uploadImageToImgBB = async (imageUri) => {
+    // Check if ImgBB API key is configured
+    if (IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE') {
+      Alert.alert(
+        'ImgBB API Not Configured',
+        'Please configure your ImgBB API key in the code. Visit https://api.imgbb.com/ to get one.',
+        [
+          { text: 'OK', onPress: () => updateFormData('image', imageUri) }
+        ]
+      );
+      return imageUri; // Return local URI as fallback
+    }
+
+    try {
+      setImageUploading(true);
+
+      // Convert image to base64
+      const base64Image = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Create form data for ImgBB API
+      const formData = new FormData();
+      formData.append('key', IMGBB_API_KEY);
+      formData.append('image', base64Image);
+      formData.append('name', 'product_image');
+
+      // Upload to ImgBB
+      const response = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.url) {
+        console.log('Product image uploaded successfully to ImgBB:', data.data.url);
+        return data.data.url; // Return ImgBB URL
+      } else {
+        throw new Error(data.error?.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('ImgBB upload error:', error);
+      Alert.alert(
+        'Upload Failed',
+        `Failed to upload image to ImgBB: ${error.message}\n\nUsing local image instead.`,
+        [
+          { text: 'OK' }
+        ]
+      );
+      return imageUri; // Return local URI as fallback
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const requestPermissions = async () => {
+    const { status: mediaLibraryStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+    
+    if (mediaLibraryStatus !== 'granted' || cameraStatus !== 'granted') {
+      Alert.alert(
+        'Permissions Required',
+        'Please grant camera and photo library permissions to add product images.'
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const pickImageFromGallery = async () => {
+    try {
+      const hasPermission = await requestPermissions();
+      if (!hasPermission) return;
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1], // Square aspect ratio for products
+        quality: 0.8,
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const localImageUri = result.assets[0].uri;
+        
+        // Upload image to ImgBB and get the URL
+        const imgbbUrl = await uploadImageToImgBB(localImageUri);
+        
+        // Store the ImgBB URL (or local URI as fallback) in form data
+        updateFormData('image', imgbbUrl);
+      }
+    } catch (error) {
+      console.error('Error picking image from gallery:', error);
+      Alert.alert('Error', 'Failed to pick image from gallery');
+    }
+  };
+
+  const takePhoto = async () => {
+    try {
+      const hasPermission = await requestPermissions();
+      if (!hasPermission) return;
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1], // Square aspect ratio for products
+        quality: 0.8,
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const localImageUri = result.assets[0].uri;
+        
+        // Upload image to ImgBB and get the URL
+        const imgbbUrl = await uploadImageToImgBB(localImageUri);
+        
+        // Store the ImgBB URL (or local URI as fallback) in form data
+        updateFormData('image', imgbbUrl);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo');
+    }
+  };
+
+  const handleImagePicker = () => {
+    const options = [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Choose from Gallery',
+        onPress: pickImageFromGallery,
+      },
+      {
+        text: 'Take Photo',
+        onPress: takePhoto,
+      },
+    ];
+
+    // Add remove option if image exists
+    if (formData.image) {
+      options.splice(1, 0, {
+        text: 'Remove Image',
+        style: 'destructive',
+        onPress: () => updateFormData('image', ''),
+      });
+    }
+
+    Alert.alert(
+      formData.image ? 'Update Product Image' : 'Add Product Image',
+      formData.image ? 'Choose an option for your product image' : 'Choose how you want to add your product image',
+      options
+    );
   };
 
   return (
@@ -137,6 +300,18 @@ export default function AddEditProductScreen({ navigation, route }) {
               {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
             </View>
 
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Product Category *</Text>
+              <TextInput
+                  style={[styles.input, errors.name && styles.inputError]}
+                  value={formData.category}
+                  onChangeText={(value) => updateFormData('category', value)}
+                  placeholder="Enter product category"
+                  maxLength={100}
+              />
+              {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
+            </View>
+
             {/* Price */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Price (Rs.) *</Text>
@@ -150,30 +325,37 @@ export default function AddEditProductScreen({ navigation, route }) {
               {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
             </View>
 
-            {/* Image URL */}
+            {/* Product Image */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Image URL *</Text>
-              <TextInput
-                style={[styles.input, errors.image && styles.inputError]}
-                value={formData.image}
-                onChangeText={(value) => updateFormData('image', value)}
-                placeholder="https://example.com/image.jpg"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              <Text style={styles.label}>Product Image</Text>
+              <TouchableOpacity 
+                style={[styles.imagePickerButton, imageUploading && styles.imagePickerDisabled]} 
+                onPress={handleImagePicker}
+                disabled={imageUploading}
+              >
+                {imageUploading ? (
+                  <View style={styles.uploadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.uploadingText}>Uploading to ImgBB...</Text>
+                  </View>
+                ) : formData.image ? (
+                  <View style={styles.imageContainer}>
+                    <Image source={{ uri: formData.image }} style={styles.productImagePreview} />
+                    <View style={styles.imageOverlay}>
+                      <Text style={styles.imageOverlayText}>
+                        {formData.image.includes('imgbb.com') ? 'Uploaded • Tap to change' : 'Tap to change'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.imagePlaceholder}>
+                    <Text style={styles.imagePlaceholderText}>📷</Text>
+                    <Text style={styles.imagePlaceholderText}>Tap to add product image</Text>
+                    <Text style={styles.imagePlaceholderSubtext}>Will be uploaded to ImgBB</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
               {errors.image && <Text style={styles.errorText}>{errors.image}</Text>}
-              
-              {/* Image Preview */}
-              {formData.image && !errors.image && (
-                <View style={styles.imagePreviewContainer}>
-                  <Text style={styles.previewLabel}>Preview:</Text>
-                  <Image
-                    source={{ uri: formData.image }}
-                    style={styles.imagePreview}
-                    onError={() => setErrors(prev => ({ ...prev, image: 'Invalid image URL' }))}
-                  />
-                </View>
-              )}
             </View>
 
             {/* Description */}
@@ -257,19 +439,66 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
   },
-  imagePreviewContainer: {
-    marginTop: 12,
-  },
-  previewLabel: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-  },
-  imagePreview: {
-    width: 120,
-    height: 120,
+  imagePickerButton: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 12,
+    backgroundColor: COLORS.white,
+    overflow: 'hidden',
+  },
+  imagePickerDisabled: {
+    opacity: 0.7,
     backgroundColor: COLORS.borderLight,
+  },
+  imagePlaceholder: {
+    height: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.borderLight,
+  },
+  imagePlaceholderText: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  imagePlaceholderSubtext: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  uploadingContainer: {
+    height: 160,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.borderLight,
+  },
+  uploadingText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    marginTop: 12,
+    fontWeight: '500',
+  },
+  imageContainer: {
+    position: 'relative',
+  },
+  productImagePreview: {
+    width: '100%',
+    height: 160,
+    resizeMode: 'cover',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  imageOverlayText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
   },
   saveButton: {
     backgroundColor: COLORS.primary,
