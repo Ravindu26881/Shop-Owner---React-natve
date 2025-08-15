@@ -178,8 +178,8 @@ export default function LoginScreen() {
 
             <View style={styles.demoInfo}>
               <Text style={styles.demoTitle}>Demo Credentials:</Text>
-              <Text style={styles.demoText}>Email: demo@store.com</Text>
-              <Text style={styles.demoText}>Password: password123</Text>
+              <Text style={styles.demoText}>username: potcakes</Text>
+              <Text style={styles.demoText}>Password: potcakes</Text>
             </View>
           </View>
         </ScrollView>
