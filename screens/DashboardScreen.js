@@ -69,7 +69,7 @@ export default function DashboardScreen({ navigation }) {
         <View style={styles.header}>
           <View>
             <Text style={styles.welcomeText}>Welcome back,</Text>
-            <Text style={styles.storeName}>{user?.storeName || 'Store Owner'}</Text>
+            <Text style={styles.storeName}>{user?.owner || 'Store Owner'}</Text>
           </View>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
