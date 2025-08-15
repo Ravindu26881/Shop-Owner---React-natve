@@ -29,11 +29,13 @@ export default function LoginScreen() {
 
 
   const handleContinue = async () => {
+    setLoading(true);
     if (!email.trim()) {
       Alert.alert('Error', 'Please enter your username');
       return;
     }
     const result = await userCheck(email.trim());
+    setLoading(false);
     if (result.success) {
         setStep('password');
         setStoreName(result.store.name);
@@ -113,7 +115,13 @@ export default function LoginScreen() {
                     style={styles.loginButton}
                     onPress={handleContinue}
                   >
-                    <Text style={styles.loginButtonText}>Continue</Text>
+                    <Text style={styles.loginButtonText}>
+                      {loading ? (
+                          <ActivityIndicator color={COLORS.white} />
+                      ) : (
+                          <Text style={styles.loginButtonText}>Continue</Text>
+                      )}
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -184,6 +192,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   keyboardView: {
     flex: 1,

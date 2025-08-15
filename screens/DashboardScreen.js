@@ -1,28 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert,
+  Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchProductsByStoreId } from '../data/api';
 import { COLORS } from '../utils/colors';
+import {useFocusEffect} from "@react-navigation/native";
 
 export default function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();
   const [productCount, setProductCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  useFocusEffect(
+      useCallback(() => {
+        loadDashboardData();
+      }, [user?.id])
+  );
 
   const loadDashboardData = async () => {
     try {
+      setLoading(true);
       if (user?.id) {
         const products = await fetchProductsByStoreId(user.id);
         setProductCount(products.length);
@@ -61,6 +65,17 @@ export default function DashboardScreen({ navigation }) {
       color: COLORS.warning,
     },
   ];
+
+  if (loading) {
+    return (
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={styles.loadingText}>Loading your dashboard...</Text>
+          </View>
+        </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -121,6 +136,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
