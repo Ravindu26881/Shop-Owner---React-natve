@@ -208,13 +208,13 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
+    borderColor: 'black',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
   },
   addButtonText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -279,10 +279,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'black'
   },
   editButtonText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 14,
     fontWeight: '500',
   },

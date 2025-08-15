@@ -281,7 +281,6 @@ export default function AddEditProductScreen({ navigation, route }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -390,7 +389,6 @@ export default function AddEditProductScreen({ navigation, route }) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
   );
 }
 
