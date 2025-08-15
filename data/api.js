@@ -105,9 +105,9 @@ export const addProduct = async (productData) => {
   }
 };
 
-export const updateProduct = async (storeId, productId, productData) => {
+export const updateProduct = async (productId, productData) => {
   try {
-    const response = await fetch(`${API_URL}/stores/${storeId}/products/${productId}`, {
+    const response = await fetch(`${API_URL}/products/${productId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -124,9 +124,9 @@ export const updateProduct = async (storeId, productId, productData) => {
   }
 };
 
-export const deleteProduct = async (storeId, productId) => {
+export const deleteProduct = async (productId) => {
   try {
-    const response = await fetch(`${API_URL}/stores/${storeId}/products/${productId}`, {
+    const response = await fetch(`${API_URL}/products/${productId}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

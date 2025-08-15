@@ -349,7 +349,6 @@ export default function StoreRegistrationScreen() {
                     <View style={styles.imagePlaceholder}>
                       <Text style={styles.imagePlaceholderText}>📷</Text>
                       <Text style={styles.imagePlaceholderText}>Tap to add store image</Text>
-                      <Text style={styles.imagePlaceholderSubtext}>Will be uploaded to ImgBB</Text>
                     </View>
                   )}
                 </TouchableOpacity>

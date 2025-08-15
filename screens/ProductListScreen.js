@@ -78,7 +78,7 @@ export default function ProductListScreen({ navigation }) {
 
   const confirmDeleteProduct = async (product) => {
     try {
-      await deleteProduct(user.storeId, product._id);
+      await deleteProduct( product._id);
       setProducts(prev => prev.filter(p => p._id !== product._id));
       Alert.alert('Success', 'Product deleted successfully');
     } catch (error) {

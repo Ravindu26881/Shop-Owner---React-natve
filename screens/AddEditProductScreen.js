@@ -36,6 +36,7 @@ export default function AddEditProductScreen({ navigation, route }) {
   const [imageUploading, setImageUploading] = useState(false);
   const [errors, setErrors] = useState({});
 
+
   useEffect(() => {
     if (isEditing && product) {
       setFormData({
@@ -95,7 +96,7 @@ export default function AddEditProductScreen({ navigation, route }) {
       };
 
       if (isEditing) {
-        await updateProduct(user.storeId, product._id, productData);
+        await updateProduct( product._id, productData);
         Alert.alert('Success', 'Product updated successfully', [
           { text: 'OK', onPress: () => navigation.goBack() },
         ]);
@@ -351,7 +352,6 @@ export default function AddEditProductScreen({ navigation, route }) {
                   <View style={styles.imagePlaceholder}>
                     <Text style={styles.imagePlaceholderText}>📷</Text>
                     <Text style={styles.imagePlaceholderText}>Tap to add product image</Text>
-                    <Text style={styles.imagePlaceholderSubtext}>Will be uploaded to ImgBB</Text>
                   </View>
                 )}
               </TouchableOpacity>
