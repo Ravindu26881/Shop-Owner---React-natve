@@ -31,11 +31,12 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
       const cameraResult = await ImagePicker.requestCameraPermissionsAsync();
       setCameraPermissions(cameraResult)
 
-      const mediaLibraryResult = await MediaLibrary.requestPermissionsAsync();
+      const mediaLibraryResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
       setStoragePermissions(mediaLibraryResult)
 
       const locationResult = await Location.requestForegroundPermissionsAsync();
       setLocationPermissions(locationResult)
+
 
     } catch (error) {
       console.error('Error checking permissions:', error);
@@ -73,7 +74,7 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
   }
 
   const requestStoragePermissions = async () => {
-    const mediaLibraryResult = await MediaLibrary.requestPermissionsAsync();
+    const mediaLibraryResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
     setStoragePermissions(mediaLibraryResult)
     if (mediaLibraryResult.granted === false && mediaLibraryResult.canAskAgain === true) {
       Alert.alert(
@@ -81,7 +82,7 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
           'This app requires storage access to upload photos of your products. Please enable storage access in your device settings.',
           [{ text: 'OK', onPress: () => {} }]
       );
-      const mediaLibraryResult = await MediaLibrary.requestPermissionsAsync();
+      const mediaLibraryResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
       setStoragePermissions(mediaLibraryResult)
     } else if (mediaLibraryResult.granted === false && mediaLibraryResult.canAskAgain === false) {
       Alert.alert(
@@ -205,8 +206,7 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
           {storagePermissions.granted=== true && cameraPermissions.granted===true && locationPermissions.granted===true ? (
               <TouchableOpacity
                   style={styles.checkButton}
-                  onPress={checkPermissions}
-                  disabled={true}
+                  onPress={onPermissionsGranted}
               >
                 <Text style={styles.checkButtonText}>
                   Proceed
