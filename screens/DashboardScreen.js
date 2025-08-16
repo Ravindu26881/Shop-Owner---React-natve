@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Alert, ActivityIndicator,
+  Alert, ActivityIndicator, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +13,19 @@ import {fetchProductsByStoreId, saveStoreLocation} from '../data/api';
 import { COLORS } from '../utils/colors';
 import {useFocusEffect} from "@react-navigation/native";
 import * as Location from 'expo-location';
+import { useGeolocated } from 'react-geolocated';
 
+
+// Platform-specific alert function
+const showAlert = (title, message) => {
+  if (Platform.OS === 'web') {
+    // Web: Use window.alert with title and message combined
+    window.alert(`${title}\n\n${message}`);
+  } else {
+    // Mobile: Use React Native Alert
+    Alert.alert(title, message);
+  }
+};
 
 export async function getCurrentPosition() {
   const { status } = await Location.requestForegroundPermissionsAsync();
@@ -23,10 +35,28 @@ export async function getCurrentPosition() {
   return { lat: pos.coords.latitude, lng: pos.coords.longitude };
 }
 
-export default function DashboardScreen({ navigation }) {
+function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();
   const [productCount, setProductCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // Use geolocated hook only on web
+  const geoData = Platform.OS === 'web' ? useGeolocated({
+    positionOptions: {
+      enableHighAccuracy: true,
+      maximumAge: 60000,
+      timeout: 10000,
+    },
+    watchPosition: false,
+    userDecisionTimeout: 5000,
+  }) : {
+    coords: null,
+    isGeolocationAvailable: false,
+    isGeolocationEnabled: false,
+    positionError: null
+  };
+
+  const { coords, isGeolocationAvailable, isGeolocationEnabled, positionError } = geoData;
 
   useFocusEffect(
       useCallback(() => {
@@ -35,10 +65,63 @@ export default function DashboardScreen({ navigation }) {
   );
 
   const saveLocation = async () => {
-    const loc = await getCurrentPosition()
-    // const loc = {"lat": 7.0022624, "lng": 80.0076049}
-    const response = await saveStoreLocation(user.id, loc["lng"], loc["lat"])
-    console.log('saveLocation', loc.lang)
+    try {
+      if (Platform.OS !== 'web') {
+        // Mobile platform
+        const loc = await getCurrentPosition();
+        // const loc = {"lat": 7.0022624, "lng": 80.0076049}
+        const response = await saveStoreLocation(user.id, loc["lng"], loc["lat"]);
+        console.log('saveLocation', loc.lng);
+        showAlert('Success', 'Your store location has been saved successfully!');
+      } else {
+        // Web platform using react-geolocated
+        if (!isGeolocationAvailable) {
+          showAlert('Error', 'Geolocation is not supported by this browser.');
+          return;
+        }
+
+        if (!isGeolocationEnabled) {
+          showAlert('Error', 'Geolocation is not enabled. Please enable location services.');
+          return;
+        }
+
+        if (positionError) {
+          let errorMessage = 'Failed to get location. ';
+          
+          if (positionError.code === 1) {
+            errorMessage += 'Location access was denied. Please enable location permissions and try again.';
+          } else if (positionError.code === 2) {
+            errorMessage += 'Location information is unavailable.';
+          } else if (positionError.code === 3) {
+            errorMessage += 'Location request timed out.';
+          } else {
+            errorMessage += 'Please try again.';
+          }
+          
+          showAlert('Location Error', errorMessage);
+          return;
+        }
+
+        if (!coords) {
+          showAlert('Error', 'Location data is not available yet. Please try again in a moment.');
+          return;
+        }
+
+        const loc = {
+          lat: coords.latitude,
+          lng: coords.longitude
+        };
+
+        console.log("Lat:", loc.lat, "Lng:", loc.lng);
+        
+        // Save location to server
+        const response = await saveStoreLocation(user.id, loc.lng, loc.lat);
+        showAlert('Success', 'Your store location has been saved successfully!');
+      }
+    } catch (error) {
+      console.error('Error saving location:', error);
+      showAlert('Location Error', 'Failed to save location. Please try again.');
+    }
   }
 
   const loadDashboardData = async () => {
@@ -288,3 +371,5 @@ const styles = StyleSheet.create({
     fontWeight: '300',
   },
 });
+
+export default DashboardScreen;
