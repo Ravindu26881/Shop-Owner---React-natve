@@ -316,11 +316,22 @@ export default function AddEditProductScreen({ navigation, route }) {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Price (Rs.) *</Text>
               <TextInput
-                style={[styles.input, errors.price && styles.inputError]}
-                value={formData.price}
-                onChangeText={(value) => updateFormData('price', value)}
-                placeholder="Enter price"
-                keyboardType="numeric"
+                  style={[styles.input, errors.price && styles.inputError]}
+                  value={formData.price}
+                  onChangeText={(value) => {
+                    // allow only digits
+                    let numericValue = value.replace(/[^0-9]/g, '');
+
+                    // limit max 6 digits (999999)
+                    if (numericValue.length > 6) {
+                      numericValue = numericValue.slice(0, 6);
+                    }
+
+                    updateFormData('price', numericValue);
+                  }}
+                  placeholder="Enter price"
+                  keyboardType="numeric"
+                  maxLength={6}   // double safety: UI stops at 6 chars
               />
               {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
             </View>
