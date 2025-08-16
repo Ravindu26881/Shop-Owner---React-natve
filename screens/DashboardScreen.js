@@ -148,7 +148,7 @@ function DashboardScreen({ navigation }) {
       subtitle: `${productCount} products`,
       icon: '📦',
       onPress: () => navigation.navigate('ProductList'),
-      color: COLORS.primary,
+      color: COLORS.info,
     },
     {
       title: 'Add New Product',
@@ -160,16 +160,16 @@ function DashboardScreen({ navigation }) {
     {
       title: 'Save Your Current Location',
       subtitle: 'So nearby customers can find you',
-      icon: '➕',
+      icon: '📍',
       onPress: saveLocation,
-      color: COLORS.success,
+      color: COLORS.warning,
     },
     {
       title: 'Store Settings',
       subtitle: 'Manage store details',
       icon: '⚙️',
       onPress: () => navigation.navigate('EditStore'),
-      color: COLORS.warning,
+      color: COLORS.error,
     },
   ];
 

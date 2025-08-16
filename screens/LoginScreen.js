@@ -27,11 +27,21 @@ export default function LoginScreen() {
   const { login, userCheck } = useAuth();
   const navigation = useNavigation();
 
+  const showAlert = (title, message) => {
+    if (Platform.OS === 'web') {
+      // Web: Use window.alert with title and message combined
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      // Mobile: Use React Native Alert
+      Alert.alert(title, message);
+    }
+  };
 
   const handleContinue = async () => {
     setLoading(true);
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your username');
+      showAlert('', 'Please enter your username');
+      setLoading(false);
       return;
     }
     const result = await userCheck(email.trim());
@@ -41,7 +51,8 @@ export default function LoginScreen() {
         setStoreName(result.store.name);
         setStoreOwnerName(result.store.owner);
     } else {
-      Alert.alert('Error', ' Username not found');
+      showAlert('', 'Username not found');
+      setLoading(false);
       return;
     }
   };
@@ -53,7 +64,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!password.trim()) {
-      Alert.alert('Error', 'Please enter your password');
+      showAlert('', 'Please enter your password');
       return;
     }
 
@@ -67,7 +78,7 @@ export default function LoginScreen() {
       setPassword('');
       setStep('username');
     } else {
-      Alert.alert('Login Failed', response.error || 'Invalid credentials');
+      showAlert('Login Failed', 'Invalid credentials');
       setLoading(false);
     }
   };
@@ -135,7 +146,7 @@ export default function LoginScreen() {
                 <>
                   <View style={styles.stepInfo}>
                     <Text style={styles.stepInfoLabel}>Welcome </Text>
-                    <Text style={styles.stepInfoValue}>{storeOwnerName}({storeName})</Text>
+                    <Text style={styles.stepInfoValue}>{storeOwnerName} ({storeName})</Text>
                   </View>
 
                   <View style={styles.inputGroup}>
@@ -258,7 +269,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
   },
   loginButtonDisabled: {
     opacity: 0.6,

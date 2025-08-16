@@ -1,6 +1,6 @@
 export const COLORS = {
   // Primary colors
-  primary: '#2563eb',
+  primary: 'black',
   primaryLight: '#3b82f6',
   primaryDark: '#1d4ed8',
   
@@ -35,5 +35,6 @@ export const COLORS = {
   // Opacity variants
   primaryWithOpacity: 'rgba(37, 99, 235, 0.1)',
   blackWithOpacity: 'rgba(0, 0, 0, 0.1)',
+  blackWithOpacity2: 'rgba(0, 0, 0, 0.2)',
   whiteWithOpacity: 'rgba(255, 255, 255, 0.9)',
 };

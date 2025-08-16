@@ -196,8 +196,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth:1,
-    borderColor: COLORS.textSecondary,
-    borderRadius: 6,
+    borderColor: COLORS.blackWithOpacity2,
+    borderRadius: 16,
+    height: 45,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addNewButtonText: {
     color: COLORS.textPrimary,
@@ -216,7 +220,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
@@ -266,15 +270,15 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingVertical: 12,
+    borderRadius: 16,
     minWidth: 60,
     alignItems: 'center',
   },
   editButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: 'black'
+    borderColor: COLORS.blackWithOpacity2
   },
   editButtonText: {
     color: COLORS.black,
@@ -283,6 +287,8 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: COLORS.error,
+    borderWidth: 1,
+    borderColor: COLORS.error,
   },
   deleteButtonText: {
     color: COLORS.white,
