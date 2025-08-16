@@ -18,7 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../contexts/AuthContext';
-import { updateStore, fetchStoreById } from '../data/api';
+import { updateStore, fetchStoreById, verifyPassword } from '../data/api';
 import { COLORS } from '../utils/colors';
 import { IMGBB_API_KEY } from '../config/imageHosting';
 
@@ -44,6 +44,9 @@ export default function EditStoreScreen({ navigation }) {
   });
   const [errors, setErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [showCurrentPasswordPrompt, setShowCurrentPasswordPrompt] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
 
   useEffect(() => {
     loadStoreData();
@@ -168,6 +171,49 @@ export default function EditStoreScreen({ navigation }) {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: null }));
     }
+  };
+
+  const handlePasswordToggle = () => {
+    if (showPasswordFields) {
+      // If password fields are showing, hide them
+      setShowPasswordFields(false);
+      setShowCurrentPasswordPrompt(false);
+      setCurrentPasswordInput('');
+      updateFormData('password', '');
+    } else {
+      // If password fields are hidden, show current password prompt first
+      setShowCurrentPasswordPrompt(true);
+    }
+  };
+
+  const verifyCurrentPassword = async () => {
+    if (!currentPasswordInput.trim()) {
+      Alert.alert('Error', 'Please enter your current password');
+      return;
+    }
+
+    setVerifyingPassword(true);
+    try {
+      const response = await verifyPassword(user.username, currentPasswordInput);
+      if (response.passwordMatches) {
+        // Password verified, show new password fields
+        setShowCurrentPasswordPrompt(false);
+        setShowPasswordFields(true);
+        setCurrentPasswordInput('');
+      } else {
+        Alert.alert('Error', 'Current password is incorrect');
+      }
+    } catch (error) {
+      console.error('Error verifying password:', error);
+      Alert.alert('Error', 'Failed to verify current password. Please try again.');
+    } finally {
+      setVerifyingPassword(false);
+    }
+  };
+
+  const cancelPasswordChange = () => {
+    setShowCurrentPasswordPrompt(false);
+    setCurrentPasswordInput('');
   };
 
   const uploadImageToImgBB = async (imageUri) => {
@@ -447,7 +493,7 @@ export default function EditStoreScreen({ navigation }) {
             <View style={styles.inputGroup}>
               <TouchableOpacity 
                 style={styles.passwordToggle}
-                onPress={() => setShowPasswordFields(!showPasswordFields)}
+                onPress={handlePasswordToggle}
               >
                 <Text style={styles.passwordToggleText}>
                   {showPasswordFields ? '🔐 Hide Password Fields' : '🔓 Change Password'}
@@ -455,6 +501,44 @@ export default function EditStoreScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
+            {/* Current Password Verification */}
+            {showCurrentPasswordPrompt && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Current Password *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={currentPasswordInput}
+                  onChangeText={setCurrentPasswordInput}
+                  placeholder="Enter your current password"
+                  secureTextEntry
+                  maxLength={100}
+                />
+                <Text style={styles.helpText}>Please verify your current password to change it</Text>
+                
+                <View style={styles.passwordButtonsContainer}>
+                  <TouchableOpacity
+                    style={[styles.passwordButton, styles.passwordButtonCancel]}
+                    onPress={cancelPasswordChange}
+                  >
+                    <Text style={styles.passwordButtonTextCancel}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[styles.passwordButton, styles.passwordButtonVerify, verifyingPassword && styles.passwordButtonDisabled]}
+                    onPress={verifyCurrentPassword}
+                    disabled={verifyingPassword}
+                  >
+                    {verifyingPassword ? (
+                      <ActivityIndicator size="small" color={COLORS.white} />
+                    ) : (
+                      <Text style={styles.passwordButtonTextVerify}>Verify</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* New Password Fields */}
             {showPasswordFields && (
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>New Password *</Text>
@@ -467,7 +551,7 @@ export default function EditStoreScreen({ navigation }) {
                   maxLength={100}
                 />
                 {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-                <Text style={styles.helpText}>Leave empty to keep current password</Text>
+                <Text style={styles.helpText}>Enter your new password</Text>
               </View>
             )}
 
@@ -651,6 +735,39 @@ const styles = StyleSheet.create({
   },
   passwordToggleText: {
     color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  passwordButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    gap: 12,
+  },
+  passwordButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  passwordButtonCancel: {
+    backgroundColor: COLORS.border,
+  },
+  passwordButtonVerify: {
+    backgroundColor: COLORS.primary,
+  },
+  passwordButtonDisabled: {
+    opacity: 0.6,
+  },
+  passwordButtonTextCancel: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  passwordButtonTextVerify: {
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: '500',
   },
