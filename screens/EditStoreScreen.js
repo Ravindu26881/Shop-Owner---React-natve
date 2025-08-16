@@ -47,6 +47,7 @@ export default function EditStoreScreen({ navigation }) {
   const [showCurrentPasswordPrompt, setShowCurrentPasswordPrompt] = useState(false);
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [verifyingPassword, setVerifyingPassword] = useState(false);
+  const [currentPasswordError, setCurrentPasswordError] = useState('');
 
   useEffect(() => {
     loadStoreData();
@@ -179,20 +180,24 @@ export default function EditStoreScreen({ navigation }) {
       setShowPasswordFields(false);
       setShowCurrentPasswordPrompt(false);
       setCurrentPasswordInput('');
+      setCurrentPasswordError('');
       updateFormData('password', '');
     } else {
       // If password fields are hidden, show current password prompt first
       setShowCurrentPasswordPrompt(true);
+      setCurrentPasswordError('');
     }
   };
 
   const verifyCurrentPassword = async () => {
     if (!currentPasswordInput.trim()) {
-      Alert.alert('Error', 'Please enter your current password');
+      setCurrentPasswordError('Please enter your current password');
       return;
     }
 
     setVerifyingPassword(true);
+    setCurrentPasswordError('');
+    
     try {
       const response = await verifyPassword(user.username, currentPasswordInput);
       if (response.passwordMatches) {
@@ -200,12 +205,13 @@ export default function EditStoreScreen({ navigation }) {
         setShowCurrentPasswordPrompt(false);
         setShowPasswordFields(true);
         setCurrentPasswordInput('');
+        setCurrentPasswordError('');
       } else {
-        Alert.alert('Error', 'Current password is incorrect');
+        setCurrentPasswordError('Current password is incorrect');
       }
     } catch (error) {
       console.error('Error verifying password:', error);
-      Alert.alert('Error', 'Failed to verify current password. Please try again.');
+      setCurrentPasswordError('Failed to verify current password. Please try again.');
     } finally {
       setVerifyingPassword(false);
     }
@@ -214,6 +220,7 @@ export default function EditStoreScreen({ navigation }) {
   const cancelPasswordChange = () => {
     setShowCurrentPasswordPrompt(false);
     setCurrentPasswordInput('');
+    setCurrentPasswordError('');
   };
 
   const uploadImageToImgBB = async (imageUri) => {
@@ -506,14 +513,23 @@ export default function EditStoreScreen({ navigation }) {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Current Password *</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, currentPasswordError && styles.inputError]}
                   value={currentPasswordInput}
-                  onChangeText={setCurrentPasswordInput}
+                  onChangeText={(value) => {
+                    setCurrentPasswordInput(value);
+                    if (currentPasswordError) {
+                      setCurrentPasswordError('');
+                    }
+                  }}
                   placeholder="Enter your current password"
                   secureTextEntry
                   maxLength={100}
                 />
-                <Text style={styles.helpText}>Please verify your current password to change it</Text>
+                {currentPasswordError ? (
+                  <Text style={styles.errorText}>{currentPasswordError}</Text>
+                ) : (
+                  <Text style={styles.helpText}>Please verify your current password to change it</Text>
+                )}
                 
                 <View style={styles.passwordButtonsContainer}>
                   <TouchableOpacity
