@@ -80,8 +80,22 @@ function DashboardScreen({ navigation }) {
           return;
         }
 
+        // Check if we're in development mode (HTTP) which blocks geolocation
+        const isHTTP = window.location.protocol === 'http:';
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
         if (!isGeolocationEnabled) {
-          showAlert('Error', 'Geolocation is not enabled. Please enable location services.');
+          let errorMsg = 'Geolocation is not enabled. ';
+          
+          if (isHTTP && !isLocalhost) {
+            errorMsg += 'This appears to be because you\'re accessing the app over HTTP instead of HTTPS. ' +
+                       'Geolocation requires HTTPS for security reasons. ' +
+                       'Try accessing through HTTPS or test on localhost for development.';
+          } else {
+            errorMsg += 'Please enable location services in your browser settings.';
+          }
+          
+          showAlert('Location Access Required', errorMsg);
           return;
         }
 
