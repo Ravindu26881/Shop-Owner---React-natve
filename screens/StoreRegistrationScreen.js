@@ -192,18 +192,32 @@ export default function StoreRegistrationScreen() {
 
     // Add remove option if image exists
     if (formData.image) {
-      options.splice(1, 0, {
-        text: 'Remove Image',
-        style: 'destructive',
-        onPress: () => handleInputChange('image', null),
-      });
+      if (Platform.OS !== 'web') {
+        options.splice(1, 0, {
+          text: 'Remove Image',
+          style: 'destructive',
+          onPress: () => handleInputChange('image', null),
+        });
+      } else {
+        const choice = window.confirm(
+            "Do you want to remove the current image?"
+        );
+        if (choice) {
+          handleInputChange('image', '')
+          return
+        }
+      }
     }
 
-    Alert.alert(
-      formData.image ? 'Update Store Image' : 'Add Store Image',
-      formData.image ? 'Choose an option for your store image' : 'Choose how you want to add your store image',
-      options
-    );
+    if (Platform.OS !== 'web') {
+      Alert.alert(
+          formData.image ? 'Update Store Image' : 'Add Store Image',
+          formData.image ? 'Choose an option for your store image' : 'Choose how you want to add your store image',
+          options
+      );
+    } else {
+      pickImageFromGallery()
+    }
   };
 
   const validateForm = () => {

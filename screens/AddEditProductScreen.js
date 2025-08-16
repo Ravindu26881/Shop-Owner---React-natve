@@ -122,6 +122,38 @@ export default function AddEditProductScreen({ navigation, route }) {
     }
   };
 
+  const convertImageToBase64 = async (imageUri) => {
+    if (Platform.OS === 'web') {
+      // Web platform: Use fetch to get the blob, then FileReader to convert to base64
+      try {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64 = reader.result.split(',')[1]; // Remove data URL prefix
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        throw new Error(`Failed to convert image to base64 on web: ${error.message}`);
+      }
+    } else {
+      // Mobile platforms: Use Expo FileSystem
+      try {
+        const base64Image = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        return base64Image;
+      } catch (error) {
+        throw new Error(`Failed to convert image to base64 on mobile: ${error.message}`);
+      }
+    }
+  };
+
   const uploadImageToImgBB = async (imageUri) => {
     // Check if ImgBB API key is configured
     if (IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE') {
@@ -138,10 +170,8 @@ export default function AddEditProductScreen({ navigation, route }) {
     try {
       setImageUploading(true);
 
-      // Convert image to base64
-      const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Convert image to base64 (platform-specific)
+      const base64Image = await convertImageToBase64(imageUri);
 
       // Create form data for ImgBB API
       const formData = new FormData();
@@ -263,21 +293,33 @@ export default function AddEditProductScreen({ navigation, route }) {
         onPress: takePhoto,
       },
     ];
-
     // Add remove option if image exists
     if (formData.image) {
-      options.splice(1, 0, {
-        text: 'Remove Image',
-        style: 'destructive',
-        onPress: () => updateFormData('image', ''),
-      });
+      if (Platform.OS !== 'web') {
+        options.splice(1, 0, {
+          text: 'Remove Image',
+          style: 'destructive',
+          onPress: () => updateFormData('image', ''),
+        });
+      } else {
+        const choice = window.confirm(
+            "Do you want to remove the current image?"
+        );
+        if (choice) {
+          updateFormData('image', '')
+          return
+        }
+      }
     }
-
-    Alert.alert(
-      formData.image ? 'Update Product Image' : 'Add Product Image',
-      formData.image ? 'Choose an option for your product image' : 'Choose how you want to add your product image',
-      options
-    );
+    if (Platform.OS !== 'web') {
+      Alert.alert(
+          formData.image ? 'Update Product Image' : 'Add Product Image',
+          formData.image ? 'Choose an option for your product image' : 'Choose how you want to add your product image',
+          options
+      );
+    } else {
+      pickImageFromGallery()
+    }
   };
 
   return (
@@ -367,6 +409,8 @@ export default function AddEditProductScreen({ navigation, route }) {
               </TouchableOpacity>
               {errors.image && <Text style={styles.errorText}>{errors.image}</Text>}
             </View>
+
+            
 
             {/* Description */}
             <View style={styles.inputGroup}>
