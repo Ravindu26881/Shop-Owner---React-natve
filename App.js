@@ -47,7 +47,7 @@ function AuthStack() {
         component={LoginScreen}
         options={{ 
           title: 'Login',
-          headerLeft: () => null, // No back button on login
+          headerShown: false
         }}
       />
       <Stack.Screen 

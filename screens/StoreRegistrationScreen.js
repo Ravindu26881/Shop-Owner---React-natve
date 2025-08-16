@@ -24,11 +24,16 @@ export default function StoreRegistrationScreen() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    address: '',
+    phone: '',
+    email: '',
     owner: '',
     category: '',
     image: null,
     password: '',
     username: '',
+    locationLat: '',
+    locationLng: '',
   });
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -254,7 +259,7 @@ export default function StoreRegistrationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -262,9 +267,6 @@ export default function StoreRegistrationScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.content}>
             <View style={styles.header}>
-              <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-                <Text style={styles.backButtonText}>← Back</Text>
-              </TouchableOpacity>
               <Text style={styles.title}>Register Your Store</Text>
               <Text style={styles.subtitle}>Fill in the details to register your store</Text>
             </View>
@@ -320,6 +322,45 @@ export default function StoreRegistrationScreen() {
                   placeholder="e.g., Electronics, Clothing, Food"
                   autoCapitalize="words"
                   autoCorrect={false}
+                />
+              </View>
+
+              {/* Address */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Address</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={formData.address}
+                  onChangeText={(value) => handleInputChange('address', value)}
+                  placeholder="Enter store address"
+                  multiline
+                  numberOfLines={2}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Phone */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Phone Number</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.phone}
+                  onChangeText={(value) => handleInputChange('phone', value)}
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              {/* Email */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.email}
+                  onChangeText={(value) => handleInputChange('email', value)}
+                  placeholder="Enter email address"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
                 />
               </View>
 
@@ -391,6 +432,34 @@ export default function StoreRegistrationScreen() {
                 </View>
               </View>
 
+              {/* Location */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Store Location (Optional)</Text>
+                <View style={styles.locationRow}>
+                  <View style={styles.locationInput}>
+                    <Text style={styles.locationLabel}>Latitude</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={formData.locationLat}
+                      onChangeText={(value) => handleInputChange('locationLat', value)}
+                      placeholder="7.8731"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View style={styles.locationInput}>
+                    <Text style={styles.locationLabel}>Longitude</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={formData.locationLng}
+                      onChangeText={(value) => handleInputChange('locationLng', value)}
+                      placeholder="80.7718"
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+                <Text style={styles.locationHelpText}>You can set this later from dashboard</Text>
+              </View>
+
               {/* Submit Button */}
               <TouchableOpacity
                 style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -407,7 +476,7 @@ export default function StoreRegistrationScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -571,5 +640,25 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 18,
     fontWeight: '600',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  locationInput: {
+    flex: 1,
+  },
+  locationLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  locationHelpText: {
+    color: COLORS.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
