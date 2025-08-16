@@ -11,8 +11,10 @@ import StoreRegistrationScreen from './screens/StoreRegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import ProductListScreen from './screens/ProductListScreen';
 import AddEditProductScreen from './screens/AddEditProductScreen';
+import EditStoreScreen from './screens/EditStoreScreen';
 import PermissionsScreen from './screens/PermissionsScreen';
 import { COLORS } from './utils/colors';
+import {Platform} from "react-native";
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +65,11 @@ function AppStack() {
         component={AddEditProductScreen}
         options={{ title: 'Edit Product' }}
       />
+      <Stack.Screen 
+        name="EditStore" 
+        component={EditStoreScreen}
+        options={{ title: 'Edit Store Details' }}
+      />
     </Stack.Navigator>
   );
 }
@@ -77,7 +84,7 @@ function AppNavigator() {
   }
 
   // Show permissions screen if permissions are not granted
-  if (!permissionsGranted) {
+  if (!permissionsGranted && Platform.OS !== 'web') {
     return (
       <NavigationContainer>
         <PermissionsScreen 

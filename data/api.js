@@ -57,6 +57,25 @@ export const saveStoreLocation = async (storeId, lng, lat) => {
   }
 };
 
+export const updateStore = async (storeId, storeData) => {
+  try {
+    const response = await fetch(`${API_URL}/stores/${storeId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(storeData),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update store');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating store:', error);
+    throw error;
+  }
+};
+
 
 
 export const fetchStoreById = async (storeId) => {

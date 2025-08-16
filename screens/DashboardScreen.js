@@ -85,7 +85,7 @@ export default function DashboardScreen({ navigation }) {
       title: 'Store Settings',
       subtitle: 'Manage store details',
       icon: '⚙️',
-      onPress: () => Alert.alert('Coming Soon', 'Store settings will be available soon'),
+      onPress: () => navigation.navigate('EditStore'),
       color: COLORS.warning,
     },
   ];
