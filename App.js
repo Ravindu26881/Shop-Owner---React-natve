@@ -5,11 +5,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { PermissionsProvider, usePermissions } from './contexts/PermissionsContext';
 import LoginScreen from './screens/LoginScreen';
 import StoreRegistrationScreen from './screens/StoreRegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import ProductListScreen from './screens/ProductListScreen';
 import AddEditProductScreen from './screens/AddEditProductScreen';
+import PermissionsScreen from './screens/PermissionsScreen';
 import { COLORS } from './utils/colors';
 
 const Stack = createNativeStackNavigator();
@@ -67,11 +69,25 @@ function AppStack() {
 
 function AppNavigator() {
   const { isAuthenticated, loading } = useAuth();
+  const { permissionsChecked, permissionsGranted, setPermissionsGranted } = usePermissions();
 
-  if (loading) {
+  // Show loading while checking auth or permissions
+  if (loading || !permissionsChecked) {
     return null; // You can add a loading screen here
   }
 
+  // Show permissions screen if permissions are not granted
+  if (!permissionsGranted) {
+    return (
+      <NavigationContainer>
+        <PermissionsScreen 
+          onPermissionsGranted={() => setPermissionsGranted(true)} 
+        />
+      </NavigationContainer>
+    );
+  }
+
+  // Show main app navigation once permissions are granted
   return (
     <NavigationContainer>
       {isAuthenticated ? <AppStack /> : <AuthStack />}
@@ -83,9 +99,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" backgroundColor={COLORS.appBackground} />
-      <AuthProvider>
-        <AppNavigator />
-      </AuthProvider>
+      <PermissionsProvider>
+        <AuthProvider>
+          <AppNavigator />
+        </AuthProvider>
+      </PermissionsProvider>
     </SafeAreaProvider>
   );
 }
