@@ -14,7 +14,7 @@ import AddEditProductScreen from './screens/AddEditProductScreen';
 import EditStoreScreen from './screens/EditStoreScreen';
 import PermissionsScreen from './screens/PermissionsScreen';
 import { COLORS } from './utils/colors';
-import {Platform} from "react-native";
+import {Platform, TouchableOpacity, Text} from "react-native";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,27 +22,70 @@ function AuthStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerShown: false,
+        headerStyle: {
+          backgroundColor: COLORS.appBackground,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.border,
+        },
+        headerTintColor: COLORS.textPrimary,
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+        },
+        headerBackTitleVisible: false,
+        headerShadowVisible: false,
+        gestureEnabled: true,
+        headerLeftContainerStyle: {
+          paddingLeft: 10,
+        },
       }}
     >
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="StoreRegistration" component={StoreRegistrationScreen} />
+      <Stack.Screen 
+        name="Login" 
+        component={LoginScreen}
+        options={{ 
+          title: 'Login',
+          headerLeft: () => null, // No back button on login
+        }}
+      />
+      <Stack.Screen 
+        name="StoreRegistration" 
+        component={StoreRegistrationScreen}
+        options={{ title: 'Store Registration' }}
+      />
     </Stack.Navigator>
   );
 }
 
 function AppStack() {
+  const { logout, user } = useAuth();
+  
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: COLORS.appBackground,
+          backgroundColor: COLORS.background,
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
+          borderBottomColor: COLORS.border,
         },
         headerTintColor: COLORS.textPrimary,
         headerTitleStyle: {
           fontWeight: '600',
+          fontSize: 18,
         },
+          headerBackTitleVisible: false,
         headerShadowVisible: false,
+        gestureEnabled: true,
+        headerLeftContainerStyle: {
+          paddingLeft: 10,
+        },
+        headerRightContainerStyle: {
+          paddingRight: 15,
+        },
       }}
     >
       <Stack.Screen 
@@ -53,7 +96,9 @@ function AppStack() {
       <Stack.Screen 
         name="ProductList" 
         component={ProductListScreen}
-        options={{ headerShown: false }}
+        options={({ navigation }) => ({
+          title: 'Products',
+        })}
       />
       <Stack.Screen 
         name="AddProduct" 
@@ -68,7 +113,7 @@ function AppStack() {
       <Stack.Screen 
         name="EditStore" 
         component={EditStoreScreen}
-        options={{ title: 'Edit Store Details' }}
+        options={{ title: 'Store Settings' }}
       />
     </Stack.Navigator>
   );

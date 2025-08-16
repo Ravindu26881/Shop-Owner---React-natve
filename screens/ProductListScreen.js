@@ -126,18 +126,7 @@ export default function ProductListScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>My Products</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate('AddProduct')}
-        >
-          <Text style={styles.addButtonText}>+ Add</Text>
-        </TouchableOpacity>
-      </View>
-
+    <View style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -146,6 +135,14 @@ export default function ProductListScreen({ navigation }) {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+        <TouchableOpacity
+            onPress={() => navigation.navigate('AddProduct')}
+            style={styles.addNewButton}
+        >
+          <Text style={styles.addNewButtonText}>
+            + Add
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Products List */}
@@ -174,7 +171,7 @@ export default function ProductListScreen({ navigation }) {
           </View>
         )}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -195,32 +192,27 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
-  },
-  addButton: {
-    borderColor: 'black',
-    paddingHorizontal: 16,
+  addNewButton: {
+    paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderWidth:1,
+    borderColor: COLORS.textSecondary,
+    borderRadius: 6,
   },
-  addButtonText: {
-    color: COLORS.black,
-    fontSize: 16,
-    fontWeight: '600',
+  addNewButtonText: {
+    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: '500'
   },
   searchContainer: {
     paddingHorizontal: 24,
+    paddingTop: 16,
     marginBottom: 16,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 5
   },
   searchInput: {
     backgroundColor: COLORS.white,
@@ -230,6 +222,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: COLORS.border,
+    width: '-webkit-fill-available'
   },
   listContainer: {
     paddingHorizontal: 24,
