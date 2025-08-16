@@ -139,9 +139,25 @@ function AppNavigator() {
     );
   }
 
+  // Web-specific linking configuration
+  const linking = Platform.OS === 'web' ? {
+    prefixes: ['http://localhost:8081', 'https://localhost:8081'],
+    config: {
+      screens: {
+        Dashboard: '',
+        ProductList: 'products',
+        AddProduct: 'products/add',
+        EditProduct: 'products/edit/:productId?',
+        EditStore: 'store/settings',
+        Login: 'login',
+        StoreRegistration: 'register',
+      },
+    },
+  } : undefined;
+
   // Show main app navigation once permissions are granted
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       {isAuthenticated ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
