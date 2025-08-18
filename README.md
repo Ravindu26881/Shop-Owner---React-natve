@@ -4,24 +4,24 @@ A React Native mobile application for store owners to manage their products in t
 
 ## Features
 
-### 🔐 Authentication
+### Authentication
 - Store owner login system
 - Secure session management
 - Auto-logout functionality
 
-### 📦 Product Management
+### Product Management
 - **View Products**: Browse all products in your store
 - **Add Products**: Create new products with images, pricing, and descriptions
 - **Edit Products**: Update existing product information
 - **Delete Products**: Remove products from your store
 - **Search & Filter**: Find products quickly with search functionality
 
-### 📊 Dashboard
+### Dashboard
 - Product count overview
 - Quick access to all features
 - Clean, intuitive interface
 
-### 📱 Mobile-First Design
+### Mobile-First Design
 - Responsive layout for all screen sizes
 - Native iOS and Android support
 - Smooth animations and transitions

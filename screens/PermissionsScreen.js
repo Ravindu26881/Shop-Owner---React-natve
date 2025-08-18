@@ -140,16 +140,16 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
 
   const PermissionItem = ({ icon, title, description, granted }) => (
     <View style={styles.permissionItem}>
-      <View style={styles.permissionIcon}>
+      {/* <View style={styles.permissionIcon}>
         <Text style={styles.permissionIconText}>{icon}</Text>
-      </View>
+      </View> */}
       <View style={styles.permissionContent}>
         <Text style={styles.permissionTitle}>{title}</Text>
         <Text style={styles.permissionDescription}>{description}</Text>
       </View>
       <View style={[styles.permissionStatus, granted && styles.permissionStatusGranted]}>
         <Text style={[styles.permissionStatusText, granted && styles.permissionStatusTextGranted]}>
-          {granted ? '✓' : '✗'}
+          {granted ? 'OK' : 'X'}
         </Text>
       </View>
     </View>
@@ -171,7 +171,6 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
               disabled={loading}
           >
             <PermissionItem
-              icon="📷"
               title="Camera Access"
               description="Take photos of your products for listings"
 
@@ -183,7 +182,6 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
               disabled={loading}
           >
             <PermissionItem
-              icon="📱"
               title="Photo Library Access"
               description="Select existing photos from your gallery"
               granted={storagePermissions.granted}
@@ -194,7 +192,6 @@ export default function PermissionsScreen({ onPermissionsGranted }) {
               disabled={loading}
           >
             <PermissionItem
-              icon="📍"
               title="Location Access"
               description="Help customers find your store location"
               granted={locationPermissions.granted}

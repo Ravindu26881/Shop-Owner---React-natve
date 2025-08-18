@@ -2,7 +2,7 @@
 
 This guide explains how to set up ImgBB API integration for image uploads in your store registration form.
 
-## 🔧 Setup Instructions
+## Setup Instructions
 
 ### 1. Get Your ImgBB API Key
 
@@ -26,15 +26,15 @@ export const IMGBB_API_KEY = 'your_actual_api_key_here';
 
 ### 3. How It Works
 
-- ✅ **Image Selection**: Users can pick images from gallery or take photos
-- ✅ **Auto Upload**: Images are automatically uploaded to ImgBB after selection  
-- ✅ **URL Storage**: The ImgBB URL (not local file path) is stored in form data
-- ✅ **Permanent Storage**: Images are stored permanently (no expiration)
-- ✅ **Fallback**: If upload fails, local URI is used as fallback
-- ✅ **Loading States**: Shows upload progress to users
-- ✅ **Error Handling**: Graceful error handling with user-friendly messages
+- **Image Selection**: Users can pick images from gallery or take photos
+- **Auto Upload**: Images are automatically uploaded to ImgBB after selection  
+- **URL Storage**: The ImgBB URL (not local file path) is stored in form data
+- **Permanent Storage**: Images are stored permanently (no expiration)
+- **Fallback**: If upload fails, local URI is used as fallback
+- **Loading States**: Shows upload progress to users
+- **Error Handling**: Graceful error handling with user-friendly messages
 
-## 📱 User Experience
+## User Experience
 
 ### Without ImgBB API Key:
 - Shows configuration alert when user selects image
@@ -46,24 +46,24 @@ export const IMGBB_API_KEY = 'your_actual_api_key_here';
 - Images are publicly accessible via ImgBB URLs
 - Perfect for production use
 
-## 🆚 ImgBB vs Transfer.sh Comparison
+## ImgBB vs Transfer.sh Comparison
 
 | Feature | ImgBB | Transfer.sh |
 |---------|--------|-------------|
-| **Permanence** | ✅ Permanent storage | ❌ Files expire (14 days) |
-| **Purpose** | ✅ Image hosting | ❌ Temporary file sharing |
-| **API Quality** | ✅ Dedicated image API | ❌ Basic file upload |
-| **File Size** | ✅ Up to 32MB | ⚠️ Various limits |
-| **Reliability** | ✅ High uptime | ⚠️ Moderate |
-| **Free Tier** | ✅ Generous limits | ✅ Free but temporary |
+| **Permanence** | Permanent storage | Files expire (14 days) |
+| **Purpose** | Image hosting | Temporary file sharing |
+| **API Quality** | Dedicated image API | Basic file upload |
+| **File Size** | Up to 32MB | Various limits |
+| **Reliability** | High uptime | Moderate |
+| **Free Tier** | Generous limits | Free but temporary |
 
-## 🔒 Security Notes
+## Security Notes
 
 - **API Key is safe** to use in client-side code for uploads
 - **No sensitive data** is exposed
 - For enhanced security in production, consider server-side uploads
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "ImgBB API Not Configured" Alert
 - **Cause**: API key is still set to `'YOUR_IMGBB_API_KEY_HERE'`
@@ -78,7 +78,7 @@ export const IMGBB_API_KEY = 'your_actual_api_key_here';
 - **Cause**: Invalid ImgBB URL or network issues
 - **Solution**: Check browser console for errors
 
-## 📋 Form Data Structure
+## Form Data Structure
 
 After successful upload, the form data contains:
 
@@ -94,14 +94,14 @@ After successful upload, the form data contains:
 }
 ```
 
-## 🌐 API Endpoint Used
+## API Endpoint Used
 
 - **URL**: `https://api.imgbb.com/1/upload`
 - **Method**: POST
 - **Body**: FormData with API key and base64 image
 - **File Limit**: 32MB maximum
 
-## 📝 Example Response
+## Example Response
 
 ```json
 {
@@ -117,14 +117,14 @@ After successful upload, the form data contains:
 }
 ```
 
-## ✨ ImgBB Features
+## ImgBB Features
 
-- 🆓 **Free Forever**: No hidden costs
-- 🔒 **No Account Required**: Anonymous uploads supported
-- 📸 **Image Optimization**: Automatic optimization
-- 🌍 **CDN Powered**: Fast global delivery
-- 📱 **Mobile Friendly**: Works perfectly with React Native
-- 🔗 **Direct Links**: Get direct image URLs instantly
+- **Free Forever**: No hidden costs
+- **No Account Required**: Anonymous uploads supported
+- **Image Optimization**: Automatic optimization
+- **CDN Powered**: Fast global delivery
+- **Mobile Friendly**: Works perfectly with React Native
+- **Direct Links**: Get direct image URLs instantly
 
 ---
 

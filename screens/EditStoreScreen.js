@@ -489,7 +489,7 @@ export default function EditStoreScreen({ navigation }) {
                   </View>
                 ) : (
                   <View style={styles.imagePlaceholder}>
-                    <Text style={styles.imagePlaceholderText}>🏪</Text>
+                    <Text style={styles.imagePlaceholderText}>Store</Text>
                     <Text style={styles.imagePlaceholderText}>Tap to add store image</Text>
                   </View>
                 )}
@@ -503,7 +503,7 @@ export default function EditStoreScreen({ navigation }) {
                 onPress={handlePasswordToggle}
               >
                 <Text style={styles.passwordToggleText}>
-                  {showPasswordFields ? '🔐 Hide Password Fields' : '🔓 Change Password'}
+                  {showPasswordFields ? 'Hide Password Fields' : 'Change Password'}
                 </Text>
               </TouchableOpacity>
             </View>

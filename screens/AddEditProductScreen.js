@@ -402,7 +402,7 @@ export default function AddEditProductScreen({ navigation, route }) {
                   </View>
                 ) : (
                   <View style={styles.imagePlaceholder}>
-                    <Text style={styles.imagePlaceholderText}>📷</Text>
+                    <Text style={styles.imagePlaceholderText}>Image</Text>
                     <Text style={styles.imagePlaceholderText}>Tap to add product image</Text>
                   </View>
                 )}

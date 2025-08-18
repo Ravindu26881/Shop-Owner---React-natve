@@ -402,7 +402,7 @@ export default function StoreRegistrationScreen() {
                     </View>
                   ) : (
                     <View style={styles.imagePlaceholder}>
-                      <Text style={styles.imagePlaceholderText}>📷</Text>
+                      <Text style={styles.imagePlaceholderText}>Image</Text>
                       <Text style={styles.imagePlaceholderText}>Tap to add store image</Text>
                     </View>
                   )}
