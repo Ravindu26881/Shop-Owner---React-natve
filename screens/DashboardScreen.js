@@ -93,7 +93,7 @@ function DashboardScreen({ navigation }) {
 
         if (positionError) {
           let errorMessage = 'Failed to get location. ';
-          
+
           if (positionError.code === 1) {
             errorMessage += 'Location access was denied. Please enable location permissions and try again.';
           } else if (positionError.code === 2) {
@@ -103,7 +103,7 @@ function DashboardScreen({ navigation }) {
           } else {
             errorMessage += 'Please try again.';
           }
-          
+
           showAlert('Location Error', errorMessage);
           return;
         }
@@ -186,7 +186,6 @@ function DashboardScreen({ navigation }) {
         <SafeAreaView style={styles.container}>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loadingText}>Loading your dashboard...</Text>
           </View>
         </SafeAreaView>
     );

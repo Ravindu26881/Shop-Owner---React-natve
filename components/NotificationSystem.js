@@ -61,6 +61,7 @@ export const NotificationProvider = ({ children }) => {
 
   // Modal functions
   const showModal = useCallback((config) => {
+    console.log('NotificationSystem showModal called with config:', config);
     setModalConfig({
       visible: true,
       ...config,

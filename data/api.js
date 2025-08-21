@@ -224,3 +224,16 @@ export const fetchOrdersByStoreId = async (storeId) => {
   });
   return await response.json();
 };
+
+export const updateOrderStatus = async (orderId, status) => {
+  const response = await fetch(`${API_URL}/orders/${orderId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      status: status
+    }),
+  });
+  return await response.json();
+};

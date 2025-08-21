@@ -9,18 +9,26 @@ import {
   Alert,
   RefreshControl,
   TextInput,
-  ActivityIndicator, ScrollView,
+  ActivityIndicator, ScrollView, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
-import {fetchProductsByStoreId, deleteProduct, fetchOrdersByStoreId, fetchProductById} from '../data/api';
+import {
+  fetchProductsByStoreId,
+  deleteProduct,
+  fetchOrdersByStoreId,
+  fetchProductById,
+  updateOrderStatus
+} from '../data/api';
 import { COLORS } from '../utils/colors';
+import {useNotification} from "../components/NotificationSystem";
 
 export default function ProductListScreen({ navigation }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userOrders, setUserOrders] = useState([]);
+  const { showModal, showSuccess, showError } = useNotification();
 
   useEffect(() => {
     loadProducts();
@@ -86,6 +94,65 @@ export default function ProductListScreen({ navigation }) {
     loadProducts();
   }, []);
 
+  const handlePhoneCall = async (user) => {
+    if(user.phone) {
+      await Linking.openURL(`tel:${user.phone}`)
+    } else {
+      const storeName = user.name || 'User';
+      showModal({
+        title: 'No Phone Number',
+        message: `${storeName} does not have a phone number listed.`,
+        type: 'info',
+        buttons: [{text: 'OK', style: 'cancel'}],
+      });
+      return;
+    }
+  };
+
+
+  const handleOrderStatusChange = async (order, status) => {
+    try {
+      await updateOrderStatus(order.orderId, status);
+      showSuccess('Order status updated successfully');
+      loadProducts();
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      showError('Failed to update order status');
+    }
+  }
+
+  const showOrderOptionsModal = (order) => {
+    console.log(111, order);
+    showModal({
+      title: 'Options for Order #' + order.orderId,
+      // message: 'Are you sure you want to delete '+ product.name+ '?',
+      type: 'warning',
+      buttons: [
+        {
+          text: 'Call ' + order.user.username,
+          style: 'cancel',
+          onPress: () => handlePhoneCall(order.user)
+        },
+        {
+          text: 'Confirm',
+          onPress: () => handleOrderStatusChange(order, 'confirmed')
+        },
+        {
+          text: 'Processing',
+          onPress: () => handleOrderStatusChange(order, 'processing')
+        },
+        {
+          text: 'Completed',
+          onPress: () => handleOrderStatusChange(order, 'delivered')
+        },
+        {
+          text: 'Reject',
+          onPress: () => handleOrderStatusChange(order, 'cancelled')
+        },
+      ]
+    });
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -113,7 +180,7 @@ export default function ProductListScreen({ navigation }) {
         ) : (
             userOrders.map((order) => (
                 <TouchableOpacity
-                    onPress={() => showOrderOptionsModal(order.store._id, order.orderId)}
+                    onPress={() => showOrderOptionsModal(order)}
                     key={order.id}
                     style={styles.orderCard}>
 
