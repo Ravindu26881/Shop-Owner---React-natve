@@ -9,7 +9,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
-import {fetchProductsByStoreId, saveStoreLocation} from '../data/api';
+import {
+  fetchOrdersByStoreId,
+  fetchProductsByStoreId,
+  getStoreOgetStoreOrdersrders,
+  saveStoreLocation
+} from '../data/api';
 import { COLORS } from '../utils/colors';
 import {useFocusEffect} from "@react-navigation/native";
 import * as Location from 'expo-location';
@@ -38,6 +43,7 @@ export async function getCurrentPosition() {
 function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();
   const [productCount, setProductCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
   const [loading, setLoading] = useState(true);
   
   // Use geolocated hook only on web
@@ -130,6 +136,8 @@ function DashboardScreen({ navigation }) {
       if (user?.id) {
         const products = await fetchProductsByStoreId(user.id);
         setProductCount(products.length);
+        const orders = await fetchOrdersByStoreId(user.id)
+        setOrderCount(orders.length);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -200,18 +208,18 @@ function DashboardScreen({ navigation }) {
 
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('ProductList')} >
             <Text style={styles.statNumber}>{productCount}</Text>
             <Text style={styles.statLabel}>Products</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>0</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.statCard} onPress={() => navigation.navigate('OrderList')}>
+            <Text style={styles.statNumber}>{orderCount}</Text>
             <Text style={styles.statLabel}>Orders</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Revenue</Text>
-          </View>
+          </TouchableOpacity>
+          {/*<View style={styles.statCard}>*/}
+          {/*  <Text style={styles.statNumber}>0</Text>*/}
+          {/*  <Text style={styles.statLabel}>Revenue</Text>*/}
+          {/*</View>*/}
         </View>
 
         {/* Menu Items */}

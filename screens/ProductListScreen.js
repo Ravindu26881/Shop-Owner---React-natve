@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchProductsByStoreId, deleteProduct } from '../data/api';
 import { COLORS } from '../utils/colors';
+import {useNotification} from "../components/NotificationSystem";
 
 export default function ProductListScreen({ navigation }) {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ export default function ProductListScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const { showModal, showSuccess, showError } = useNotification();
 
   useEffect(() => {
     loadProducts();
@@ -50,7 +52,7 @@ export default function ProductListScreen({ navigation }) {
       }
     } catch (error) {
       console.error('Error loading products:', error);
-      Alert.alert('Error', 'Failed to load products');
+      showError('Failed to load products');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -63,28 +65,31 @@ export default function ProductListScreen({ navigation }) {
   }, []);
 
   const handleDeleteProduct = (product) => {
-    Alert.alert(
-      'Delete Product',
-      `Are you sure you want to delete "${product.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
+    showModal({
+      title: 'Delete Product',
+      message: 'Are you sure you want to delete '+ product.name+ '?',
+      type: 'warning',
+      buttons: [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
         {
           text: 'Delete',
-          style: 'destructive',
-          onPress: () => confirmDeleteProduct(product),
+          onPress: () => confirmDeleteProduct(product)
         },
       ]
-    );
+    });
   };
 
   const confirmDeleteProduct = async (product) => {
     try {
       await deleteProduct( product._id);
       setProducts(prev => prev.filter(p => p._id !== product._id));
-      Alert.alert('Success', 'Product deleted successfully');
+      showSuccess('Product deleted successfully.');
     } catch (error) {
       console.error('Error deleting product:', error);
-      Alert.alert('Error', 'Failed to delete product');
+      showError('Failed to delete product:');
     }
   };
 

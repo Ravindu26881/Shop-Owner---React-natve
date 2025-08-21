@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { addProduct, updateProduct } from '../data/api';
 import { COLORS } from '../utils/colors';
 import { IMGBB_API_KEY } from '../config/imageHosting';
+import {useNotification} from "../components/NotificationSystem";
 
 export default function AddEditProductScreen({ navigation, route }) {
   const { user } = useAuth();
@@ -35,6 +36,7 @@ export default function AddEditProductScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [errors, setErrors] = useState({});
+  const { showModal, showSuccess, showError } = useNotification();
 
 
   useEffect(() => {
@@ -97,18 +99,20 @@ export default function AddEditProductScreen({ navigation, route }) {
 
       if (isEditing) {
         await updateProduct( product._id, productData);
-        Alert.alert('Success', 'Product updated successfully', [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
+        showSuccess('Product updated successfully');
+        setTimeout(function() {
+          navigation.goBack()
+        }, 1000);
       } else {
         await addProduct(productData);
-        Alert.alert('Success', 'Product added successfully', [
-          { text: 'OK', onPress: () => navigation.goBack() },
-        ]);
+        showSuccess('Product added successfully');
+        setTimeout(function() {
+          navigation.goBack()
+        }, 1000);
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      Alert.alert('Error', 'Failed to save product. Please try again.');
+      showError('Failed to save product. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -157,13 +161,21 @@ export default function AddEditProductScreen({ navigation, route }) {
   const uploadImageToImgBB = async (imageUri) => {
     // Check if ImgBB API key is configured
     if (IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE') {
-      Alert.alert(
-        'ImgBB API Not Configured',
-        'Please configure your ImgBB API key in the code. Visit https://api.imgbb.com/ to get one.',
-        [
-          { text: 'OK', onPress: () => updateFormData('image', imageUri) }
+      showModal({
+        title: 'ImgBB API Not Configured',
+        message: 'Please configure your ImgBB API key in the code. Visit https://api.imgbb.com/ to get one.',
+        type: 'warning',
+        buttons: [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'OK',
+            onPress: () => updateFormData('image', imageUri)
+          },
         ]
-      );
+      });
       return imageUri; // Return local URI as fallback
     }
 
@@ -195,13 +207,7 @@ export default function AddEditProductScreen({ navigation, route }) {
       }
     } catch (error) {
       console.error('ImgBB upload error:', error);
-      Alert.alert(
-        'Upload Failed',
-        `Failed to upload image to ImgBB: ${error.message}\n\nUsing local image instead.`,
-        [
-          { text: 'OK' }
-        ]
-      );
+      showError('Failed to upload image to ImgBB: '+error.message+ '. Using local image instead.');
       return imageUri; // Return local URI as fallback
     } finally {
       setImageUploading(false);
@@ -213,10 +219,7 @@ export default function AddEditProductScreen({ navigation, route }) {
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
     
     if (mediaLibraryStatus !== 'granted' || cameraStatus !== 'granted') {
-      Alert.alert(
-        'Permissions Required',
-        'Please grant camera and photo library permissions to add product images.'
-      );
+      showError('Please grant camera and photo library permissions to add product images.');
       return false;
     }
     return true;
@@ -246,7 +249,7 @@ export default function AddEditProductScreen({ navigation, route }) {
       }
     } catch (error) {
       console.error('Error picking image from gallery:', error);
-      Alert.alert('Error', 'Failed to pick image from gallery');
+      showError('Failed to pick image from gallery');
     }
   };
 
@@ -274,7 +277,7 @@ export default function AddEditProductScreen({ navigation, route }) {
       }
     } catch (error) {
       console.error('Error taking photo:', error);
-      Alert.alert('Error', 'Failed to take photo');
+      showError('Failed to take photo');
     }
   };
 

@@ -128,6 +128,19 @@ export const fetchProductsByStoreId = async (storeId) => {
   }
 };
 
+export const fetchProductById = async ( productId) => {
+  try {
+    const response = await fetch(API_URL + '/products/' + productId);
+    if (!response.ok) {
+      throw new Error('Failed to fetch products');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    throw error;
+  }
+};
+
 export const addProduct = async (productData) => {
   try {
     const response = await fetch(`${API_URL}/stores/${productData.store}/products`, {
@@ -200,4 +213,14 @@ export const authenticateStoreOwner = async (email, password) => {
     console.error('Error authenticating:', error);
     throw error;
   }
+};
+
+export const fetchOrdersByStoreId = async (storeId) => {
+  const response = await fetch(`${API_URL}/stores/${storeId}/orders`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+  return await response.json();
 };

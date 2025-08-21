@@ -6,10 +6,12 @@ import { StatusBar } from 'expo-status-bar';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PermissionsProvider, usePermissions } from './contexts/PermissionsContext';
+import { NotificationProvider } from './components/NotificationSystem';
 import LoginScreen from './screens/LoginScreen';
 import StoreRegistrationScreen from './screens/StoreRegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import ProductListScreen from './screens/ProductListScreen';
+import OrderListScreen from './screens/OrderListScreen';
 import AddEditProductScreen from './screens/AddEditProductScreen';
 import EditStoreScreen from './screens/EditStoreScreen';
 import PermissionsScreen from './screens/PermissionsScreen';
@@ -100,6 +102,13 @@ function AppStack() {
           title: 'Products',
         })}
       />
+        <Stack.Screen
+            name="OrderList"
+            component={OrderListScreen}
+            options={({ navigation }) => ({
+                title: 'Orders',
+            })}
+        />
       <Stack.Screen 
         name="AddProduct" 
         component={AddEditProductScreen}
@@ -167,11 +176,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" backgroundColor={COLORS.appBackground} />
-      <PermissionsProvider>
-        <AuthProvider>
-          <AppNavigator />
-        </AuthProvider>
-      </PermissionsProvider>
+      <NotificationProvider>
+        <PermissionsProvider>
+          <AuthProvider>
+            <AppNavigator />
+          </AuthProvider>
+        </PermissionsProvider>
+      </NotificationProvider>
     </SafeAreaProvider>
   );
 }
