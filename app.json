@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SaleSale Store Owner",
-    "slug": "salesale-store-owner",
+    "name": "bazario console",
+    "slug": "bazario-console",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,7 +26,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.ravindu26881.storeowner",
+      "package": "com.ravindu26881.bazarioconsole",
       "permissions": [
         "INTERNET",
         "CAMERA",

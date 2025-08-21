@@ -1,6 +1,6 @@
-# SaleSale Store Owner App
+# Bazario Console App
 
-A React Native mobile application for store owners to manage their products in the SaleSale marketplace.
+A React Native mobile application for store owners to manage their products in the Bazario marketplace.
 
 ## Features
 
@@ -64,7 +64,7 @@ For testing purposes, use these credentials:
 
 ## API Integration
 
-The app connects to the SaleSale API at:
+The app connects to the Bazario API at:
 ```
 https://products-api-production-124f.up.railway.app
 ```
@@ -171,4 +171,4 @@ For questions or issues:
 
 ## License
 
-This project is part of the SaleSale marketplace system.
+This project is part of the Bazario marketplace system.
