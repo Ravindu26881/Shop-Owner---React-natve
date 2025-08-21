@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -36,6 +37,7 @@ export default function AddEditProductScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showImageModal, setShowImageModal] = useState(false);
   const { showModal, showSuccess, showError } = useNotification();
 
 
@@ -57,6 +59,116 @@ export default function AddEditProductScreen({ navigation, route }) {
       title: isEditing ? 'Edit Product' : 'Add Product',
     });
   }, [navigation, isEditing]);
+
+  // Function to detect if user is on mobile web
+  const isMobileWeb = () => {
+    if (Platform.OS !== 'web') return false;
+    
+    const userAgent = navigator.userAgent;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /MacIntel/.test(navigator.platform));
+  };
+
+  // Handle photo capture for web mobile
+  const handlePhoto = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showError('Please select a valid image file.');
+        return;
+      }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showError('Image file is too large. Please select an image under 10MB.');
+        return;
+      }
+      
+      console.log('Camera photo captured:', file.name, 'Size:', file.size, 'Type:', file.type);
+      
+      // Upload the captured image directly
+      uploadImageFromFile(file);
+    }
+  };
+
+  // Function to upload file directly (for handlePhoto and other file uploads)
+  const uploadImageFromFile = async (file) => {
+    // Check if ImgBB API key is configured
+    if (IMGBB_API_KEY === 'YOUR_IMGBB_API_KEY_HERE') {
+      showModal({
+        title: 'ImgBB API Not Configured',
+        message: 'Please configure your ImgBB API key in the code. Visit https://api.imgbb.com/ to get one.',
+        type: 'warning',
+        buttons: [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => setShowImageModal(false)
+          },
+          {
+            text: 'Use Local Image',
+            onPress: () => {
+              const localUrl = URL.createObjectURL(file);
+              updateFormData('image', localUrl);
+              setShowImageModal(false);
+            }
+          },
+        ]
+      });
+      return;
+    }
+
+    try {
+      setImageUploading(true);
+      console.log('Starting image upload from camera/file:', file.name);
+      
+      // Convert file to base64
+      const base64Image = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1]; // Remove data URL prefix
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      console.log('File converted to base64, uploading to ImgBB...');
+
+      // Upload to ImgBB
+      const formData = new FormData();
+      formData.append('key', IMGBB_API_KEY);
+      formData.append('image', base64Image);
+      formData.append('name', `camera_product_${Date.now()}`);
+
+      const response = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.url) {
+        console.log('Camera image uploaded successfully to ImgBB:', data.data.url);
+        updateFormData('image', data.data.url);
+        showSuccess('Image uploaded successfully!');
+      } else {
+        throw new Error(data.error?.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('ImgBB upload error:', error);
+      showError('Failed to upload image: ' + error.message);
+      
+      // Fallback to local URL
+      const localUrl = URL.createObjectURL(file);
+      updateFormData('image', localUrl);
+      showError('Using local image as fallback.');
+    } finally {
+      setImageUploading(false);
+      setShowImageModal(false);
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -282,29 +394,37 @@ export default function AddEditProductScreen({ navigation, route }) {
   };
 
   const handleImagePicker = () => {
-    const options = [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Choose from Gallery',
-        onPress: pickImageFromGallery,
-      },
-      {
-        text: 'Take Photo',
-        onPress: takePhoto,
-      },
-    ];
-    // Add remove option if image exists
+    // Handle image removal first if image exists
     if (formData.image) {
       if (Platform.OS !== 'web') {
-        options.splice(1, 0, {
-          text: 'Remove Image',
-          style: 'destructive',
-          onPress: () => updateFormData('image', ''),
-        });
+        // Native platform - show alert with remove option
+        const options = [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Remove Image',
+            style: 'destructive',
+            onPress: () => updateFormData('image', ''),
+          },
+          {
+            text: 'Choose from Gallery',
+            onPress: pickImageFromGallery,
+          },
+          {
+            text: 'Take Photo',
+            onPress: takePhoto,
+          },
+        ];
+        Alert.alert(
+            'Update Product Image',
+            'Choose an option for your product image',
+            options
+        );
+        return;
       } else {
+        // Web platform - show confirmation
         const choice = window.confirm(
             "Do you want to remove the current image?"
         );
@@ -314,14 +434,37 @@ export default function AddEditProductScreen({ navigation, route }) {
         }
       }
     }
+
     if (Platform.OS !== 'web') {
+      // Native platform - show alert with options
+      const options = [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Choose from Gallery',
+          onPress: pickImageFromGallery,
+        },
+        {
+          text: 'Take Photo',
+          onPress: takePhoto,
+        },
+      ];
       Alert.alert(
-          formData.image ? 'Update Product Image' : 'Add Product Image',
-          formData.image ? 'Choose an option for your product image' : 'Choose how you want to add your product image',
+          'Add Product Image',
+          'Choose how you want to add your product image',
           options
       );
     } else {
-      pickImageFromGallery()
+      // Web platform - check if mobile or desktop
+      if (isMobileWeb()) {
+        // Mobile web - show modal
+        setShowImageModal(true);
+      } else {
+        // Desktop web - direct gallery pick
+        pickImageFromGallery();
+      }
     }
   };
 
@@ -446,6 +589,72 @@ export default function AddEditProductScreen({ navigation, route }) {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        {/* Mobile Web Image Picker Modal */}
+        <Modal
+          visible={showImageModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowImageModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Add Product Image</Text>
+              <Text style={styles.modalSubtitle}>Choose how you want to add your product image</Text>
+              
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  setShowImageModal(false);
+                  pickImageFromGallery();
+                }}
+              >
+                <Text style={styles.modalButtonText}>📁 Upload from Gallery</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalButton}
+                onPress={() => {
+                  // Close modal first for better UX
+                  setShowImageModal(false);
+                  
+                  // Create hidden file input for camera with slight delay
+                  setTimeout(() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.capture = 'environment'; // Use rear camera
+                    input.style.display = 'none';
+                    
+                    // Handle the photo selection
+                    input.addEventListener('change', (event) => {
+                      handlePhoto(event);
+                      // Clean up the input element
+                      document.body.removeChild(input);
+                    });
+                    
+                    // Handle cancellation (when user closes camera without taking photo)
+                    input.addEventListener('cancel', () => {
+                      document.body.removeChild(input);
+                    });
+                    
+                    document.body.appendChild(input);
+                    input.click();
+                  }, 100);
+                }}
+              >
+                <Text style={styles.modalButtonText}>📷 Take Photo</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={() => setShowImageModal(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
   );
 }
@@ -569,6 +778,55 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: COLORS.white,
     fontSize: 18,
+    fontWeight: '600',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+    minHeight: 300,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  modalButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalCancelButton: {
+    backgroundColor: COLORS.borderLight,
+    marginTop: 8,
+  },
+  modalCancelButtonText: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
     fontWeight: '600',
   },
 });
